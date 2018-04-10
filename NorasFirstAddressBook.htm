@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Nora's AddressBook</title>
+	<link rel="stylesheet" href="styles/addressbook.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+	<!-- <script src="scripts/addressbook.js"></script> -->
+
+	</head>
+<body>
+	<div class="container">
+		<div class="title">
+			<h1>Nora's Address Book</h1>
+		</div>
+		<div class="info"><strong>DETAILS OF CONTACT CLICKED</strong></div>
+		
+		<div class="row">
+		<table id="contacts-table">
+         <tr id="contacts-head">
+        <th class= "col-xs-3 col-md-3">Name</th>
+        <th class= "col-xs-3 col-md-3">Phone</th>
+        <th class= "col-xs-3 col-md-3">Address</th>
+		<th class= "col-xs-3 col-md-3">Email</th>
+            </tr>
+       </table>
+		
+		</div>
+		 
+        <div id="details">
+       
+        </div>
+		<br><br>
+		<div>
+		<button id="addingNewId">Create new contact to Nora's AddressBook</button></div>
+		<div class="form">
+			<label for="newContactName">Name</label><input type="text" id="newContactName" class="state"><br><br>
+			
+			<label for="newContactPhone">Phone</label><input type="text" id="newContactPhone" class="state"><br><br>
+			
+			<label for="newContactAddress">Address</label><textarea name="address" id="newContactAddress" cols="30" rows="5" class="state"></textarea><br><br>
+			
+			<label for="newContactEmail">E-Mail</label><input type="email" id="newContactEmail" class="state">
+			<br><br>
+			<input type="submit" id="Save" value = "Save">
+			<input type="submit" id="Discard" value= "Discard">
+		</div>
+        <div class="row">
+		<table id="contacts-table">
+         <tr id="contacts-head">
+        <th class= "col-xs-2 col-md-2">Name</th>
+        <th class= "col-xs-2 col-md-2">Phone</th>
+        <th class= "col-xs-2 col-md-2">Address</th>
+		<!-- <th class= "col-xs-2 col-md-2">Fax</th> -->
+		<th class= "col-xs-2 col-md-2">Email</th>
+        <th class= "col-xs-2 col-md-2">Actions</th>
+    </tr>
+       </table>
+		
+		</div><br>
+		<table id ="localsave" class="localsave">
+			
+		</table>
+        
+	</div>
+	<script>
+	
+	window.onload = function(){
+	// Buttons
+	var initialAddButton = document.getElementById("addingNewId");
+	var formDiv = document.getElementsByClassName('form')[0]; 
+	var DiscardButton = document.getElementById('Discard');
+	var SavingButton = document.getElementById('Save');
+	// Form 
+	var newContactName = document.getElementById('newContactName');
+	var newContactPhone = document.getElementById('newContactPhone');
+	var newContactAddress = document.getElementById('newContactAddress');
+	var newContactEmail = document.getElementById('newContactEmail');
+	// Nora's Diary Content display
+    var details = document.getElementById('details');
+	var noraDiaryContent = document.querySelector('.localsave');
+    var btnstate = 0;
+        var selectedindex=0;
+	initialAddButton.addEventListener("click", function(){
+		// display the form div
+		if (formDiv.style.display === "none") {
+        formDiv.style.display = "block";
+    } else {
+        formDiv.style.display = "none";
+    }	
+	});
+
+	DiscardButton.addEventListener("click", function(){
+		formDiv.style.display = "none";
+	});
+
+	SavingButton.addEventListener("click", saveToContacts);
+
+	noraDiaryContent.addEventListener("click", removeEntry);//bubbling function
+
+	// initializing the Storage Array
+	var norasDiary = [];
+
+	
+	function constructorVariables(newContactName,newContactPhone,newContactAddress,newContactEmail){
+		this.newContactName = newContactName;
+		this.newContactPhone = newContactPhone;
+		this.newContactAddress = newContactAddress;
+		this.newContactEmail = newContactEmail;
+	}
+
+	function saveToContacts(evt){
+      var validityCheck = newContactName.value!='' && newContactPhone.value!='' && newContactAddress.value!='' && newContactEmail.value!='';
+		if(validityCheck){
+			// format the input into a valid JSON structure
+			var changeToObject = new constructorVariables(newContactName.value,newContactPhone.value,newContactAddress.value,newContactEmail.value);
+		   if(btnstate ==0){
+             norasDiary.push(changeToObject);
+			 localStorage['localsave'] = JSON.stringify(norasDiary);
+			 formDiv.style.display = "none";
+			 clearForm();
+			 showAddressBook();
+           }else{
+               var x = document.getElementById('localsave').rows[selectedindex].cells;
+             //  norasDiary.push(changeToObject);
+            norasDiary.splice(selectedindex,1,changeToObject)
+			 localStorage['localsave'] = JSON.stringify(norasDiary);
+                formDiv.style.display = "none";
+               btnstate = 0;
+                
+			    x[1].innerHTML = norasDiary[selectedindex].newContactPhone;
+                x[0].innerHTML = "<a href='#' class='username' data-id='" + n + "'>" + norasDiary[n].newContactName + "</a>";
+                x[2].innerHTML = norasDiary[selectedindex].newContactAddress;
+                
+                x[4].innerHTML = norasDiary[selectedindex].newContactEmail;
+               //to make the form field empty when you click create new
+               newContactName.value = "";
+            newContactAddress.value = "";
+             newContactEmail.value = "";
+              newContactPhone.value = "";
+               console.log(localStorage['localsave']);
+                 }
+		}
+
+        } 
+
+	function removeEntry(evt){
+		// Remove an entry from the addressbook
+		if(evt.target.classList.contains('del')){
+			var remID = evt.target.getAttribute('data-id');
+			norasDiary.splice(remID,1);
+			localStorage['localsave'] = JSON.stringify(norasDiary);
+			showAddressBook();
+		}
+        if(evt.target.classList.contains('edit')){
+			var remID = evt.target.getAttribute('data-id');
+			norasDiary.splice(remID,1);
+          var newbee = localStorage['localsave'];
+            	norasDiary = JSON.parse(newbee);
+            selectedindex = remID;
+            for(n in norasDiary){
+               if(n = remID){
+                   break;
+               }
+            }
+           //alert(n);
+           newContactName.value = norasDiary[n].newContactName;
+		   newContactPhone.value = norasDiary[n].newContactPhone;
+            newContactAddress.value = norasDiary[n].newContactAddress;
+            newContactEmail.value = norasDiary[n].newContactEmail;
+             <!-- newContactFax.value = norasDiary[n].newContactFax; -->
+             
+			//localStorage['localsave'] = JSON.stringify(norasDiary);
+           formDiv.style.display ="block";
+            btnstate = 1;
+          //alert(btnstate);
+			showAddressBook();
+		}
+    
+        if(evt.target.classList.contains('username')){
+			var remID = evt.target.getAttribute('data-id');
+			norasDiary.splice(remID,1);
+         var newbee = localStorage['localsave'];
+         norasDiary = JSON.parse(newbee);
+            for(n in norasDiary){
+               if(n = remID){
+                   break;
+               }
+            }
+           //alert(n);
+          var newContact ='';
+           newContact += norasDiary[n].newContactName +" "+ '&nbsp;';
+            newContact += norasDiary[n].newContactPhone +" "+ '&nbsp;';
+            newContact += norasDiary[n].newContactAddress +" "+ '&nbsp;';
+             newContact += norasDiary[n].newContactEmail +" "+" ";
+           //  formDiv.style.display ="block";
+     details.innerHTML  = newContact;
+	 //alert(newContact);
+      }
+           
+    }
+	function clearForm(){
+		var state = document.querySelectorAll('.state');
+		for(var i in state){
+			state[i].value = '';
+		}
+	}
+
+	
+        function showAddressBook(){
+        var newbee = localStorage['localsave'];
+		if(newbee === undefined){
+			newbee= '[]';//storing an empty array
+		} else {
+			norasDiary = JSON.parse(newbee);
+			// Loop over the array addressBook and insert into the page
+			noraDiaryContent.innerHTML = '';
+			for(var n in norasDiary){
+				var content = '<tr class="entry">';
+					content += '<div class="newContactName"><p><td><a href="#" class="username" data-id="' + n + '">' + norasDiary[n].newContactName +" "+'&nbsp;' + '</a></td></p></div>';
+					content += '<div class="newContactPhone"><p><a href="#" class="phone" data-ph="'+ n +'"><td>' + norasDiary[n].newContactPhone  +" "+'&nbsp;'+ '</td></a></p></div>';
+					content += '<div class="newContactAddress"><p><a href="#" class="address" data-ad="' + n+ 2 + '"><td>' + norasDiary[n].newContactAddress +'&nbsp;' + '</td></a></p></div>';
+					content += '<div class="newContactEmail"><p><a href="#" class="email" data-em="' + n+4 + '"><td>' + norasDiary[n].newContactEmail +'&nbsp;' + '</td></a><p></div>';
+					content += '<td class="del"><a href="#" class="del" data-id="' + n + '"><i class="fa fa-trash"></i> </a></td>';
+				 content += '<td class="edit"><a href="#" class="edit" data-id="' + n + '">Edit </a></td>';
+					
+					content += '</tr>';
+				noraDiaryContent.innerHTML += content;
+			}
+		}
+	
+      
+    }
+	showAddressBook();
+        
+}
+</script>
+</body>
+</html>
